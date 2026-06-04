@@ -35,10 +35,18 @@ if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone --depth 1 https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 fi
 
+# 5. Install the tmux plugins non-interactively (avoids needing `prefix + I`)
+echo "==> Installing tmux plugins"
+export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
+"$HOME/.tmux/plugins/tpm/bin/install_plugins" || \
+  echo "   (if this failed, start a fresh tmux and press  \` + I  manually)"
+
 cat <<'EOF'
 
-==> Done. Final manual steps:
-    1. Start tmux, then press  ` + I   (backtick is the prefix) to install tmux plugins.
+==> Done. Final steps:
+    1. Start a FRESH tmux (run `tmux kill-server` first if one is already running)
+       so the new config + plugins load.
     2. Launch Ghostty fresh so it picks up the new config.
     Starship/yazi work immediately in a new shell.
+    To update plugins later:  ` + U   (backtick is the prefix).
 EOF
