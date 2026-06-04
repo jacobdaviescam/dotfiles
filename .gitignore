@@ -1,0 +1,7 @@
+# Never commit secrets or machine state
+*.local
+.DS_Store
+*.swp
+
+# tmux plugins are installed by TPM, not tracked here
+tmux/.config/tmux/plugins/
