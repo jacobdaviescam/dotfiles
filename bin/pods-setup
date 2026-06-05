@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# pods-setup: run remote-bootstrap.sh on one or more pods in parallel.
+# Each argument is the full ssh arg-string for one pod (quote it):
+#   pods-setup "root@1.2.3.4 -p 40001" "root@5.6.7.8 -p 40002"
+#
+# Secrets are forwarded from YOUR local env so they never live in the repo.
+# Export these locally first (e.g. from your password manager):
+#   export CLAUDE_CODE_OAUTH_TOKEN=...   GH_TOKEN=...
+# Note: forwarded values are briefly visible in the pod's process list — fine for
+# ephemeral pods; for stronger isolation set them as RunPod template env vars instead.
+set -uo pipefail
+RAW="https://raw.githubusercontent.com/jacobdaviescam/dotfiles/main/remote-bootstrap.sh"
+
+if [ "$#" -eq 0 ]; then
+  echo "usage: pods-setup \"root@host -p PORT\" [\"...\"]" >&2
+  exit 1
+fi
+
+ENVS="CLAUDE_CODE_OAUTH_TOKEN='${CLAUDE_CODE_OAUTH_TOKEN:-}' GH_TOKEN='${GH_TOKEN:-}'"
+ENVS="$ENVS GIT_USER_NAME='${GIT_USER_NAME:-}' GIT_USER_EMAIL='${GIT_USER_EMAIL:-}'"
+
+for target in "$@"; do
+  (
+    echo "[$target] bootstrapping…"
+    if ssh $target "$ENVS bash -c 'curl -fsSL $RAW | bash'"; then
+      echo "[$target] ✅ done"
+    else
+      echo "[$target] ❌ FAILED"
+    fi
+  ) &
+done
+wait
+echo "All pods processed."

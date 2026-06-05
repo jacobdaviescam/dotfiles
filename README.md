@@ -30,6 +30,36 @@ Then: start tmux and press `` ` `` + `I` to install tmux plugins; relaunch Ghost
   changes are live immediately).
 - Add a new config: create `pkg/.config/.../file`, then `stow pkg`.
 
+## Remote GPU pods (RunPod)
+
+Provision a fresh headless Linux pod with tmux + Claude Code + git + gh in one command.
+
+**One-time, on your laptop:** generate a subscription-backed Claude token (needs a browser):
+```bash
+claude setup-token        # prints CLAUDE_CODE_OAUTH_TOKEN
+```
+Put that token and a GitHub PAT into your **RunPod template's env vars / Secrets** as
+`CLAUDE_CODE_OAUTH_TOKEN` and `GH_TOKEN`. Then every pod is pre-authenticated.
+
+**On a fresh pod:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/jacobdaviescam/dotfiles/main/remote-bootstrap.sh | bash
+tmux new -A -s main
+```
+Installs tmux (lean `remote/tmux.conf`), Claude Code (native installer), gh, git
+identity, uv, and mosh-server. Reads secrets/identity from env vars (see top of
+`remote-bootstrap.sh`). Defaults git identity to personal; override with
+`GIT_USER_NAME`/`GIT_USER_EMAIL`.
+
+**Local helpers** (`bin/` — add to PATH: `export PATH="$HOME/dotfiles/bin:$PATH"`):
+- `pod <ssh args>` — SSH in and attach/create a persistent `main` tmux session.
+  `mosh`-friendly: install `brew install mosh` locally for drop-proof reconnects.
+- `pods-setup "root@h1 -p p1" "root@h2 -p p2"` — run the bootstrap on many pods in
+  parallel, forwarding `CLAUDE_CODE_OAUTH_TOKEN`/`GH_TOKEN` from your local env.
+
+**Fan-out tip:** open one tmux pane per pod, press `` ` `` + `*` to toggle
+`synchronize-panes`, then type/paste a command once to run it on every pod at once.
+
 ## Conventions
 
 - **Never commit secrets.** No SSH private keys, tokens, or `~/.config/gh/hosts.yml`.

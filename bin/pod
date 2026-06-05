@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# pod: SSH into a pod and attach (or create) a persistent tmux session named "main".
+# Whatever you pass is handed straight to ssh, so any target/flags work:
+#   pod root@1.2.3.4 -p 40123
+#   pod abc123-64410xyz@ssh.runpod.io -i ~/.ssh/id_ed25519   # RunPod proxy
+#   pod my-ssh-alias
+# Override the session name with POD_SESSION=foo pod ...
+set -euo pipefail
+SESSION="${POD_SESSION:-main}"
+exec ssh -t "$@" "tmux new-session -A -s '$SESSION'"
